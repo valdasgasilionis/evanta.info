@@ -7,6 +7,7 @@
         <title>Laravel</title>
 
         <!-- Fonts -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
         <link href="https://fonts.googleapis.com/css?family=Nunito:200,600" rel="stylesheet">
 
         <script src="https://js.braintreegateway.com/web/3.44.2/js/client.min.js"></script>
@@ -67,6 +68,23 @@
         </style>
     </head>
     <body>
+        <div>
+                @if (session('success message'))
+                    <div class="alert alert-success">
+                        {{session ('success message')}}
+                    </div>            
+                @endif
+                @if (count($errors) > 0)
+                    <div class="alert alert-danger">
+                        <ul>
+                            @foreach ($errors->all() as $error)
+                                <li> {{ $error }}</li>                                
+                            @endforeach
+                        </ul>
+                    </div>                    
+                @endif
+            </div>
+    
         <div class="flex-center position-ref full-height">
             @if (Route::has('login'))
                 <div class="top-right links">
@@ -83,37 +101,60 @@
             @endif
 
             <div class="content">
-                <div class="title m-b-md">
-                    2 kambarių butas nuomai VANAGUPĖJE
-                </div>
-
-                <div id="dropin-container"></div>
-  <button id="submit-button">Request payment method</button>
-  <script>
-    var button = document.querySelector('#submit-button');
-
-    braintree.dropin.create({
-      authorization: 'CLIENT_AUTHORIZATION',
-      container: '#dropin-container'
-    }, function (createErr, instance) {
-      button.addEventListener('click', function () {
-        instance.requestPaymentMethod(function (requestPaymentMethodErr, payload) {
-          // Submit payload.nonce to your server
-        });
-      });
-    });
-  </script>
-
-                <div class="links">
-                    <a href="https://laravel.com/docs">Docs</a>
-                    <a href="https://laracasts.com">Laracasts</a>
-                    <a href="https://laravel-news.com">News</a>
-                    <a href="https://blog.laravel.com">Blog</a>
-                    <a href="https://nova.laravel.com">Nova</a>
-                    <a href="https://forge.laravel.com">Forge</a>
-                    <a href="https://github.com/laravel/laravel">GitHub</a>
-                </div>
+            
+  
+                <form method="post" id="payment-form" action='{{url("/checkout")}}'>
+                    @csrf
+                    <section>
+                        <label for="amount">
+                            <span class="input-label">Amount</span>
+                            <div class="input-wrapper amount-wrapper">
+                                <input id="amount" name="amount" type="tel" min="1" placeholder="Amount" value="10">
+                            </div>
+                        </label>
+    
+                        <div class="bt-drop-in-wrapper">
+                            <div id="bt-dropin"></div>
+                        </div>
+                    </section>
+    
+                    <input id="nonce" name="payment_method_nonce" type="hidden" />
+                    <button class="button" type="submit"><span>Test Transaction</span></button>
+                </form>      
+                
             </div>
         </div>
+        <script src="https://js.braintreegateway.com/web/dropin/1.18.0/js/dropin.min.js"></script>
+        <script>
+            var form = document.querySelector('#payment-form');
+            var client_token = '{{$token}}';
+    
+            braintree.dropin.create({
+              authorization: client_token,
+              selector: '#bt-dropin',
+              paypal: {
+                flow: 'vault'
+              }
+            }, function (createErr, instance) {
+              if (createErr) {
+                console.log('Create Error', createErr);
+                return;
+              }
+              form.addEventListener('submit', function (event) {
+                event.preventDefault();
+    
+                instance.requestPaymentMethod(function (err, payload) {
+                  if (err) {
+                    console.log('Request Payment Method Error', err);
+                    return;
+                  }
+    
+                  // Add the nonce to the form and submit
+                  document.querySelector('#nonce').value = payload.nonce;
+                  form.submit();
+                });
+              });
+            });
+        </script>
     </body>
 </html>
