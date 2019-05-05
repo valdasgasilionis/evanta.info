@@ -10,8 +10,11 @@ use Illuminate\Http\Request;
 | contains the "web" middleware group. Now create something great!
 |
 */
+Route::get('/', function(){
+    return view ('welcome');
+});
 
-Route::get('/', function () {
+Route::get('/pay', function () {
     $gateway = new Braintree\Gateway([
         'environment' => config('services.braintree.environment'),
         'merchantId' => config('services.braintree.merchant_id'),
@@ -21,7 +24,7 @@ Route::get('/', function () {
 
     $token = $gateway->ClientToken()->generate();
 
-    return view('welcome', [
+    return view('pay', [
         'token' => $token
     ]);
 });
@@ -54,7 +57,7 @@ Route::post('/checkout', function(Request $request){
         if ($result->success) {
             $transaction = $result->transaction;
             //header("Location: " . $baseUrl . "transaction.php?id=" . $transaction->id);
-            return back()->with('success message','transaction went all well. The transaction ID is:'. $transaction->id);
+            return redirect('/')->with('success message','transaction went all well. The transaction ID is:'. $transaction->id);
 
         } else {
             $errorString = "";
@@ -65,7 +68,7 @@ Route::post('/checkout', function(Request $request){
 
             /* $_SESSION["errors"] = $errorString;
             header("Location: " . $baseUrl . "index.php"); */
-            return back()->withErrors('An error occurred with message:'.$result->message);
+            return redirect('/')->withErrors('An error occurred with message:'.$result->message);
         }
 });
 
