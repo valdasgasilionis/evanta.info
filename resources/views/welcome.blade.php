@@ -9,6 +9,9 @@
         <!-- Fonts -->
         <link href="https://fonts.googleapis.com/css?family=Nunito:200,600" rel="stylesheet">
 
+        <script src="https://js.braintreegateway.com/web/3.44.2/js/client.min.js"></script>
+
+
         <!-- Styles -->
         <style>
             html, body {
@@ -83,6 +86,23 @@
                 <div class="title m-b-md">
                     2 kambarių butas nuomai VANAGUPĖJE
                 </div>
+
+                <div id="dropin-container"></div>
+  <button id="submit-button">Request payment method</button>
+  <script>
+    var button = document.querySelector('#submit-button');
+
+    braintree.dropin.create({
+      authorization: 'CLIENT_AUTHORIZATION',
+      container: '#dropin-container'
+    }, function (createErr, instance) {
+      button.addEventListener('click', function () {
+        instance.requestPaymentMethod(function (requestPaymentMethodErr, payload) {
+          // Submit payload.nonce to your server
+        });
+      });
+    });
+  </script>
 
                 <div class="links">
                     <a href="https://laravel.com/docs">Docs</a>
