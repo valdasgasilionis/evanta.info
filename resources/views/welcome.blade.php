@@ -81,7 +81,7 @@
 
             <div class="content">
                 <div class="title m-b-md">
-                    Laravel
+                    2 kambarių butas nuomai VANAGUPĖJE
                 </div>
 
                 <div class="links">
