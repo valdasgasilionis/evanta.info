@@ -14,6 +14,20 @@ Route::get('/', function(){
     return view ('welcome');
 });
 
+Route::get('/hosted', function() {
+    $gateway = new Braintree\Gateway([
+        'environment' => config('services.braintree.environment'),
+        'merchantId' => config('services.braintree.merchant_id'),
+        'publicKey' => config('services.braintree.public_key'),
+        'privateKey' => config('services.braintree.private_key')
+    ]);
+
+    $token = $gateway->ClientToken()->generate();
+    return view ('hosted', [
+        'token' => $token
+    ]);
+});
+
 Route::get('/pay', function () {
     $gateway = new Braintree\Gateway([
         'environment' => config('services.braintree.environment'),
@@ -39,15 +53,20 @@ Route::post('/checkout', function(Request $request){
     ]);
 
         $amount = $request->amount;
+
+        $firstName = $request->first_name;
+        $lastName = $request->last_name;
+        $email = $request->customer_email;
+
         $nonce = $request->payment_method_nonce;
 
         $result = $gateway->transaction()->sale([
             'amount' => $amount,
             'paymentMethodNonce' => $nonce,
             'customer' => [
-                'firstName' => 'Valdas',
-                'lastName'=> 'Gasilionis',
-                'email' => 'admin@evanta.info'
+                'firstName' => $firstName,
+                'lastName'=> $lastName,
+                'email' => $email
             ],
             'options' => [
                 'submitForSettlement' => true

@@ -106,6 +106,9 @@
                 <div class="alert alert-warning">
                     <a href="/pay">Pay me</a>
                 </div>
+                <div class="alert alert-warning">
+                    <a href="/hosted">Hosted form</a>
+                </div>
             </div>
   
     </body>
