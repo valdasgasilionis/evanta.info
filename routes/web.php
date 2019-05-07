@@ -1,5 +1,6 @@
 <?php
 use Illuminate\Http\Request;
+use App\Rent;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -11,7 +12,41 @@ use Illuminate\Http\Request;
 |
 */
 Route::get('/', function(){
-    return view ('welcome');
+       return view ('welcome');
+});
+
+/* Route::resource('rents','RentController'); */
+Route::get('/rents', function() {
+    $rentals = Rent::all();
+    return view('rents.index',compact('rentals'));
+});
+
+Route::post('/rents', function(Request $request) {
+    if (auth()->check()) {
+       $rental = new Rent;
+    $rental->start = $request->start;
+    $rental->end = $request->end;
+    $rental->price = $request->price;
+
+    $rental->save();
+
+    return back(); 
+    }    
+});
+
+Route::post('/rents/{id}', function($id) {
+    if (auth()->check()) {
+        $rent = Rent::find($id);
+        if ($rent->payed === 0) {
+            $rent->payed = true;
+        }else {
+            $rent->payed = false;
+        }
+        
+        $rent->save(); 
+
+        return back();
+    }
 });
 
 Route::get('/hosted', function() {
@@ -23,8 +58,26 @@ Route::get('/hosted', function() {
     ]);
 
     $token = $gateway->ClientToken()->generate();
+
     return view ('hosted', [
-        'token' => $token
+        'token' => $token,
+    ]);
+});
+Route::get('rents/{rent}/edit', function($rent) {
+    $gateway = new Braintree\Gateway([
+        'environment' => config('services.braintree.environment'),
+        'merchantId' => config('services.braintree.merchant_id'),
+        'publicKey' => config('services.braintree.public_key'),
+        'privateKey' => config('services.braintree.private_key')
+    ]);
+
+    $token = $gateway->ClientToken()->generate();
+
+    $rental = Rent::where('id', $rent)->get();
+
+    return view('rents.edit', [
+        'token' => $token,
+        'rental' => $rental
     ]);
 });
 
@@ -57,6 +110,7 @@ Route::post('/checkout', function(Request $request){
         $firstName = $request->first_name;
         $lastName = $request->last_name;
         $email = $request->customer_email;
+        $id = $request->id_number;
 
         $nonce = $request->payment_method_nonce;
 
@@ -76,6 +130,9 @@ Route::post('/checkout', function(Request $request){
         if ($result->success) {
             $transaction = $result->transaction;
             //header("Location: " . $baseUrl . "transaction.php?id=" . $transaction->id);
+            $rent = Rent::find($id);
+            $rent->reserved = true;
+            $rent->save();
             return redirect('/')->with('success message','transaction went all well. The transaction ID is:'. $transaction->id);
 
         } else {

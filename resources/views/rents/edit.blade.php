@@ -1,8 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- CSRF Token -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <title>{{ config('app.name', 'Laravel') }}</title>
+
+    <!-- Scripts -->
+    <script src="{{ asset('js/app.js') }}" defer></script>
+
+    <!-- Fonts -->
+    <link rel="dns-prefetch" href="//fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet" type="text/css">
+
+    <!-- Styles -->
+    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+   {{--  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"> --}}
     <title>Checkout</title>
    <!-- Styles -->
    <style>
@@ -61,21 +77,29 @@
             text-decoration: none;
             text-transform: uppercase;
         }
+        #button {
+            margin: 5px 0px;
+        }
+        #checkout-amount {
+            color:tomato;
+            font-style: italic;
+        }
 
         .m-b-md {
             margin-bottom: 30px;
         }
     </style>
   </head>
-  <body>
+<body>   
       <div class="container bg-info">
         <div>
             Your are about to pay for rent:<br>
-            Rent start date: {{$rent->start}};<br>
-            Rent end date: {{$rent->end}};<br>
+            Rent start date: {{$rental[0]->start}};<br>
+            Rent end date: {{$rental[0]->end}};<br>
         </div>
             <form action="{{url('/checkout')}}" id="my-sample-form" method="post">
                 @csrf
+                <input type="hidden" name="id_number" value="{{$rental[0]->id}}">
                 <div class="form-group">
                     <div class="row">
                         <div class="col">
@@ -98,7 +122,7 @@
                         </div>
                         <div class="col">
                             <label for="amount">Amount</label>
-                            <input type="text" class="form-control" id="amount" name="amount" value="{{$rent->price}}" readonly>
+                            <input type="text" class="form-control" id="checkout-amount" name="amount" value="{{$rental[0]->price}}" readonly>
                         </div>
                     </div>
                 </div>
@@ -135,7 +159,8 @@
                 <input id="nonce" name="payment_method_nonce" type="hidden" />
 
             </form>
-      </div>
+      </div> 
+   
 
     <script src="https://js.braintreegateway.com/web/3.44.2/js/client.min.js"></script>
     <script src="https://js.braintreegateway.com/web/3.44.2/js/hosted-fields.min.js"></script>
@@ -212,6 +237,7 @@
           }, false);
         });
       });
-    </script>
-  </body>
+    </script> 
+</body>
 </html>
+  
